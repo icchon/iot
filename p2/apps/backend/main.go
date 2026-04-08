@@ -62,51 +62,54 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.Default())
 
-	// Health check
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-	})
+	api := r.Group("/api")
+	{
+		// Health check
+		api.GET("/health", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		})
 
-	// 投票
-	r.POST("/vote", func(c *gin.Context) {
-		var vote Vote
-		if err := c.ShouldBindJSON(&vote); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		_, err := db.Exec("INSERT INTO votes (app_id, choice) VALUES ($1, $2)", vote.AppID, vote.Choice)
-		if err != nil {
-			log.Printf("Error inserting vote: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save vote"})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"status": "voted"})
-	})
-
-	// 集計結果
-	r.GET("/results/:app_id", func(c *gin.Context) {
-		appID := c.Param("app_id")
-		rows, err := db.Query("SELECT choice, count(*) FROM votes WHERE app_id = $1 GROUP BY choice", appID)
-		if err != nil {
-			log.Printf("Error fetching results: %v", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch results"})
-			return
-		}
-		defer rows.Close()
-
-		results := make(map[string]int)
-		for rows.Next() {
-			var choice string
-			var count int
-			if err := rows.Scan(&choice, &count); err != nil {
-				continue
+		// 投票
+		api.POST("/vote", func(c *gin.Context) {
+			var vote Vote
+			if err := c.ShouldBindJSON(&vote); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
 			}
-			results[choice] = count
-		}
-		c.JSON(http.StatusOK, results)
-	})
+
+			_, err := db.Exec("INSERT INTO votes (app_id, choice) VALUES ($1, $2)", vote.AppID, vote.Choice)
+			if err != nil {
+				log.Printf("Error inserting vote: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save vote"})
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{"status": "voted"})
+		})
+
+		// 集計結果
+		api.GET("/results/:app_id", func(c *gin.Context) {
+			appID := c.Param("app_id")
+			rows, err := db.Query("SELECT choice, count(*) FROM votes WHERE app_id = $1 GROUP BY choice", appID)
+			if err != nil {
+				log.Printf("Error fetching results: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch results"})
+				return
+			}
+			defer rows.Close()
+
+			results := make(map[string]int)
+			for rows.Next() {
+				var choice string
+				var count int
+				if err := rows.Scan(&choice, &count); err != nil {
+					continue
+				}
+				results[choice] = count
+			}
+			c.JSON(http.StatusOK, results)
+		})
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

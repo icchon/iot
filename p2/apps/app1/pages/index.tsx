@@ -5,7 +5,7 @@ export default function Home() {
   const [results, setResults] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const appId = "app1";
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "/api";
 
   const fetchResults = async () => {
     try {
