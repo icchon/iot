@@ -4,6 +4,7 @@ metadata:
   name: global-default-ingress
   annotations:
     traefik.ingress.kubernetes.io/router.middlewares: default-replace-path@kubernetescrd
+  namespace: iot
 spec:
   rules:
   - http:

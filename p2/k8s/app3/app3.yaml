@@ -4,6 +4,7 @@ metadata:
   labels:
     app: app3-deployment
   name: app3-deployment
+  namespace: iot
 spec:
   replicas: 1
   selector:
@@ -32,6 +33,7 @@ metadata:
   labels:
     app: app3-deployment
   name: app3-service
+  namespace: iot
 spec:
   ports:
   - port: 80

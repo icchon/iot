@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: vote-config
+  namespace: iot
 data:
   DB_HOST: "db-cluster-rw"
   DB_NAME: "votedb"

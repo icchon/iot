@@ -4,6 +4,7 @@ metadata:
   labels:
     app: backend-deployment
   name: backend-deployment
+  namespace: iot
 spec:
   replicas: 1
   selector:
@@ -57,6 +58,7 @@ metadata:
   labels:
     app: backend-deployment
   name: backend-service
+  namespace: iot
 spec:
   ports:
   - port: 8080
