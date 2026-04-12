@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*' # v1.0.0 や v0.1.0 などのタグに対応
+  workflow_dispatch: # 手動実行を有効化
+    inputs:
+      tag_name:
+        description: 'ビルド・デプロイするバージョンタグ (例: v0.1.0)'
+        required: true
+        default: 'v0.1.0'
 
 jobs:
   build-and-push:
@@ -28,8 +34,9 @@ jobs:
         with:
           context: ./p3/apps/${{ matrix.app }}
           push: true
-          # イメージ名は icchondocker/vote-app1:v0.1.0 の形式
-          tags: ${{ secrets.DOCKER_USERNAME }}/vote-${{ matrix.app }}:${{ github.ref_name }}
+          # タグの決定: 手動実行なら inputs から、タグ push なら github.ref_name から取得
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/vote-${{ matrix.app }}:${{ github.event.inputs.tag_name || github.ref_name }}
           build-args: |
             NEXT_PUBLIC_BACKEND_URL=/api
 
@@ -45,15 +52,17 @@ jobs:
       # 3. Kubernetes デプロイメント YAML の更新 (イメージタグの書き換え)
       - name: Update Deployment YAML
         run: |
-          export NEW_TAG=${{ github.ref_name }}
+          # タグの決定
+          export NEW_TAG=${{ github.event.inputs.tag_name || github.ref_name }}
           # p3/k8s/app 以下のすべての .yaml ファイル内のイメージタグ (:v.1.0 等) を置換
           find p3/k8s/app/ -name "*.yaml" -exec sed -i "s|:v\.[0-9.]*|:${NEW_TAG}|g" {} +
 
       # 4. 変更を main ブランチに push する
       - name: Commit and Push changes
         run: |
+          export NEW_TAG=${{ github.event.inputs.tag_name || github.ref_name }}
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git add p3/k8s/
-          git commit -m "chore: update image tag to ${{ github.ref_name }} [skip ci]" || echo "No changes to commit"
+          git commit -m "chore: update image tag to ${NEW_TAG} [skip ci]" || echo "No changes to commit"
           git push origin main
