@@ -64,6 +64,7 @@ export default function Home() {
             <span>猫: {results.cat || 0} 票</span>
           </div>
         </div>
+        <div className="version">v0.1.0</div>
       </main>
 
       <style jsx>{`
@@ -80,6 +81,7 @@ export default function Home() {
         .cat { background-color: #ef4444; color: white; }
         .results { border-top: 1px solid #eee; padding-top: 1rem; }
         .stat { display: flex; justify-content: space-around; font-size: 1.5rem; font-weight: bold; color: #555; gap: 2rem; }
+        .version { margin-top: 1.5rem; font-size: 0.8rem; color: #999; }
       `}</style>
     </div>
   );
