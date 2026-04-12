@@ -16,7 +16,7 @@ spec:
         app: app2-deployment
     spec:
       containers:
-      - image: icchondocker/vote-app2:v.1.0
+      - image: icchondocker/vote-app2:v0.1.0
         name: vote-app2
         ports:
         - containerPort: 3000
