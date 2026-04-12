@@ -16,7 +16,7 @@ spec:
         app: app3-deployment
     spec:
       containers:
-      - image: icchondocker/vote-app3:latest
+      - image: icchondocker/vote-app3:v.1.0
         name: vote-app3
         ports:
         - containerPort: 3000

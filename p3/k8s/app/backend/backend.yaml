@@ -16,7 +16,7 @@ spec:
         app: backend-deployment
     spec:
       containers:
-      - image: icchondocker/vote-backend:latest
+      - image: icchondocker/vote-backend:v.1.0
         name: vote-backend
         ports:
         - containerPort: 8080
