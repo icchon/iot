@@ -6,4 +6,4 @@ metadata:
 spec:
   replacePathRegex:
     regex: "^/$"
-    replacement: "/app3/"
+    replacement: "/app3"

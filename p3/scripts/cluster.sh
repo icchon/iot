@@ -6,11 +6,11 @@ CLUSTER_NAME="iot-cluster"
 sudo k3d cluster delete $CLUSTER_NAME || true
 
 # 2. クラスター作成
-# -p "8081:80@loadbalancer": ホストの8081番をK8sのIngressに繋ぐ
+# -p "80:80@loadbalancer": ホストの80番をK8sのIngressに繋ぐ
 # --agents 2: ワーカーノードを2台用意
 echo "--- Creating k3d cluster: $CLUSTER_NAME ---"
 sudo k3d cluster create $CLUSTER_NAME \
-    -p "8081:80@loadbalancer" \
+    -p "80:80@loadbalancer" \
     --agents 2 \
     --wait
 

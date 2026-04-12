@@ -3,7 +3,8 @@ kind: Ingress
 metadata:
   name: global-default-ingress
   annotations:
-    traefik.ingress.kubernetes.io/router.middlewares: default-replace-path@kubernetescrd
+    # 名前空間を dev に修正
+    traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd
   namespace: dev
 spec:
   rules:
