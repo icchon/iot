@@ -6,7 +6,7 @@ metadata:
   name: app2-deployment
   namespace: iot
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: app2-deployment
