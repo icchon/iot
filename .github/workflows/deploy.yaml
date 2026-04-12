@@ -11,6 +11,9 @@ on:
         required: true
         default: 'v0.1.0'
 
+permissions:
+  contents: write # 変更をリポジトリに push するために必要
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
