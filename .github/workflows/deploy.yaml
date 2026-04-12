@@ -39,6 +39,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: main # 明示的に main ブランチをチェックアウト
 
       # 3. Kubernetes デプロイメント YAML の更新 (イメージタグの書き換え)
       - name: Update Deployment YAML
