@@ -34,17 +34,17 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-secret
-              key: POSTGRES_USER
+              key: username
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: db-secret
-              key: POSTGRES_PASSWORD
+              key: password
         - name: DB_NAME
           valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: POSTGRES_DB
+            configMapKeyRef:
+              name: vote-config
+              key: DB_NAME
         - name: PORT
           valueFrom:
             configMapKeyRef:

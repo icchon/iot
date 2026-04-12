@@ -3,8 +3,6 @@ kind: Ingress
 metadata:
   name: global-default-ingress
   annotations:
-    # ルートへのリクエストを app3 の basePath (/app3) に飛ばすためのリライト設定
-    # Traefik のアノテーションを使用して、パスのリライトを実現します。
     traefik.ingress.kubernetes.io/router.middlewares: default-replace-path@kubernetescrd
 spec:
   rules:

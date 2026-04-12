@@ -39,6 +39,8 @@ services:
   app1:
     build:
       context: ./app1
+      args:
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
     ports:
       - "3001:3000"
     environment:
@@ -49,6 +51,8 @@ services:
   app2:
     build:
       context: ./app2
+      args:
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
     ports:
       - "3002:3000"
     environment:
@@ -59,6 +63,8 @@ services:
   app3:
     build:
       context: ./app3
+      args:
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:8080
     ports:
       - "3003:3000"
     environment:
