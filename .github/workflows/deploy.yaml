@@ -58,7 +58,7 @@ jobs:
           # タグの決定
           export NEW_TAG=${{ github.event.inputs.tag_name || github.ref_name }}
           # p3/k8s/app 以下のすべての .yaml ファイル内のイメージタグ (:v0.1.0 等) を置換
-          find p3/k8s/app/ -name "*.yaml" -exec sed -i "s|:v\.[0-9.]*|:${NEW_TAG}|g" {} +
+          find app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
 
       # 4. 変更を main ブランチに push する
       - name: Commit and Push changes
