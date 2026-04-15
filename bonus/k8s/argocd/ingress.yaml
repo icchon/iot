@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd-server-ingress
+  namespace: argocd
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    # Nginx から ArgoCD への通信を HTTPS にする
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    # ArgoCD の自己署名証明書によるエラーを回避
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
+    # SSL Passthrough は使わず、Nginx で SSL を終端させる
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: argocd.k8s.icchon.jp
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argocd-server
+            port:
+              number: 443

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: app3-deployment
+  name: app3-deployment
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app3-deployment
+  template:
+    metadata:
+      labels:
+        app: app3-deployment
+    spec:
+      containers:
+      - image: icchondocker/vote-app3:v0.3.0
+        name: vote-app3
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_BACKEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: vote-config
+              key: NEXT_PUBLIC_BACKEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: app3-deployment
+  name: app3-service
+  namespace: dev
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: app3-deployment
+  type: ClusterIP

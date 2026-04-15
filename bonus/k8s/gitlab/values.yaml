@@ -1,0 +1,55 @@
+# 1. 独自ドメインとプロトコルの設定
+global:
+  hosts:
+    domain: k8s.icchon.jp  # 自身のドメインに変更
+  ingress:
+    configureCertmanager: false # 自己署名やHTTP運用の場合はfalse
+    enabled: true
+    class: nginx
+    tls:
+      enabled: false           # 最初はHTTPで安定させる
+
+# 2. リソースを大量に喰う「監視系」を徹底的にOFFにする
+prometheus:
+  install: false               # デフォルトではtrueなので明示的に切る
+gitlab-exporter:
+  enabled: false
+nginx-ingress:
+  enabled: true
+  controller:
+    kind: Deployment
+    scope:
+      enabled: false
+    service:
+      type: LoadBalancer # K3s の ServiceLB がポート 80 をこの Nginx 
+
+# 3. GitLab本体（Rails/Sidekiq）の軽量化
+gitlab:
+  webservice:
+    workerConfig:
+      minProcesses: 2          # Pumaワーカーを最小に
+      maxProcesses: 2
+  sidekiq:
+    concurrency: 5             # 並列ジョブ実行数を抑える
+  kas:
+    enabled: false             # Agent Server (KAS) を使わないならOFF
+  toolbox:
+    replicas: 1
+
+# 4. データベースとキャッシュ（最小構成)
+postgresql:
+  image:
+    tag: 16.6.0
+  primary:
+    resources:
+      requests:
+        memory: 512Mi          # DBのメモリ消費を抑える
+redis:
+  metrics:
+    enabled: false             # Redisの監視も不要
+
+# 5. Runnerの設定（後で使う）
+gitlab-runner:
+  install: true
+  rbac:
+    create: true
