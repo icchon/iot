@@ -3,7 +3,7 @@
 SERVER_IP="192.168.56.110"
 WORKER_IP="192.168.56.111"
 
-sudo apt update && sudo apt install -y net-tools
+sudo apt-get update && sudo apt-get install -y net-tools
 
 IFACE=$(ip -4 addr show | grep "$WORKER_IP" | awk '{print $NF}')
 

@@ -1,17 +1,34 @@
-# 1. 独自ドメインとプロトコルの設定
 global:
   hosts:
-    domain: k8s.icchon.jp  # 自身のドメインに変更
+    domain: k8s.icchon.jp
+    gitlab:
+      name: gitlab.k8s.icchon.jp
+      https: true
   ingress:
-    configureCertmanager: false # 自己署名やHTTP運用の場合はfalse
+    configureCertmanager: true
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-issuer"
     enabled: true
     class: nginx
     tls:
-      enabled: false           # 最初はHTTPで安定させる
+      enabled: true
+
+certmanager-issuer:
+  install: false
+  email: icchon1001@gmail.com
+
+registry:
+  enabled: true
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: "cloudflare-issuer"
+    tls:
+      enabled: true
+      secretName: gitlab-registry-tls
 
 # 2. リソースを大量に喰う「監視系」を徹底的にOFFにする
 prometheus:
-  install: false               # デフォルトではtrueなので明示的に切る
+  install: false
 gitlab-exporter:
   enabled: false
 nginx-ingress:
@@ -21,18 +38,21 @@ nginx-ingress:
     scope:
       enabled: false
     service:
-      type: LoadBalancer # K3s の ServiceLB がポート 80 をこの Nginx 
+      type: LoadBalancer
 
 # 3. GitLab本体（Rails/Sidekiq）の軽量化
 gitlab:
   webservice:
+    ingress:
+      tls:
+        secretName: gitlab-webservice-tls
     workerConfig:
-      minProcesses: 2          # Pumaワーカーを最小に
+      minProcesses: 2
       maxProcesses: 2
   sidekiq:
-    concurrency: 5             # 並列ジョブ実行数を抑える
+    concurrency: 5
   kas:
-    enabled: false             # Agent Server (KAS) を使わないならOFF
+    enabled: false
   toolbox:
     replicas: 1
 
@@ -43,10 +63,10 @@ postgresql:
   primary:
     resources:
       requests:
-        memory: 512Mi          # DBのメモリ消費を抑える
+        memory: 512Mi
 redis:
   metrics:
-    enabled: false             # Redisの監視も不要
+    enabled: false
 
 # 5. Runnerの設定（後で使う）
 gitlab-runner:

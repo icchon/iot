@@ -3,7 +3,7 @@ SERVER_IP="192.168.56.110"
 
 # 1. 必要なツールのインストール
 # git と helm は GitLab や Argo CD の操作に必須なので追加しました
-sudo apt update && sudo apt install -y net-tools bat tree git curl
+sudo apt-get update && sudo apt-get install -y net-tools bat tree git curl
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 # 2. インターフェースの自動検出
@@ -41,6 +41,6 @@ sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
 sudo chown vagrant:vagrant /home/vagrant/.kube/config
 
 # GitLab 公式リポジトリを追加
-helm repo add gitlab https://charts.gitlab.io/
-# リポジトリの情報を最新にする
-helm repo update
+# helm repo add gitlab https://charts.gitlab.io/
+# # リポジトリの情報を最新にする
+# helm repo update

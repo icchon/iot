@@ -5,14 +5,20 @@ metadata:
   namespace: argocd
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    # Nginx から ArgoCD への通信を HTTPS にする
+    # --- 追加: cert-manager への指示 ---
+    cert-manager.io/cluster-issuer: "cloudflare-issuer"
+    # -------------------------------
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-    # ArgoCD の自己署名証明書によるエラーを回避
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
-    # SSL Passthrough は使わず、Nginx で SSL を終端させる
     nginx.ingress.kubernetes.io/ssl-passthrough: "false"
 spec:
   ingressClassName: nginx
+  # --- 追加: TLS 設定 ---
+  tls:
+  - hosts:
+    - argocd.k8s.icchon.jp
+    secretName: argocd-server-tls # cert-manager がこの名前で本物を作ってくれる
+  # --------------------
   rules:
   - host: argocd.k8s.icchon.jp
     http:
@@ -24,3 +30,4 @@ spec:
             name: argocd-server
             port:
               number: 443
+              

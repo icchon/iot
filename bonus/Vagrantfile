@@ -19,15 +19,9 @@ Vagrant.configure("2") do |config|
     sw.vm.hostname = "kaisobeSW"
     sw.vm.network "private_network", ip: "192.168.56.111"
     sw.vm.provider "virtualbox" do |vb|
-      # ワーカーはアプリを動かすだけなので 2GB〜4GB でOK
       vb.memory = "4096"
       vb.cpus = 2
     end
     sw.vm.provision "shell", path: "scripts/setup_worker.sh"
   end
-
-  # --- ポートフォワーディングの設定（オプション） ---
-  # ホストPCから GitLab UI (80) や Argo CD UI (8080) にアクセスしやすくします
-  config.vm.network "forwarded_port", guest: 80, host: 8081, auto_correct: true # GitLab用
-  config.vm.network "forwarded_port", guest: 8080, host: 8888, auto_correct: true # Argo CD用
 end

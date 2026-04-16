@@ -1,0 +1,67 @@
+stages:
+  - build
+  - update-k8s
+
+variables:
+  # GitLab標準のレジストリを使用
+  DOCKER_REGISTRY: $CI_REGISTRY
+  IMAGE_NAME_PREFIX: $CI_REGISTRY_IMAGE/vote
+
+build-and-push:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  parallel:
+    matrix:
+      - APP: [app1, app2, app3, backend]
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - |
+      # タグの決定 (タグPush時、または手動実行時の変数から)
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        export TAG=$CI_COMMIT_TAG
+      else
+        export TAG=${TAG_NAME:-v0.1.0}
+      fi
+    - docker build 
+        --build-arg NEXT_PUBLIC_BACKEND_URL=/api 
+        -t $IMAGE_NAME_PREFIX-$APP:$TAG 
+        ./p3/apps/$APP
+    - docker push $IMAGE_NAME_PREFIX-$APP:$TAG
+  only:
+    - tags
+    - web  # 手動実行用
+
+update-k8s:
+  stage: update-k8s
+  image: alpine:latest
+  needs: ["build-and-push"]
+  before_script:
+    - apk add --no-cache sed git
+    # Gitのユーザー設定（Commitに必要）
+    - git config --global user.email "ci-bot@example.com"
+    - git config --global user.name "CI Bot"
+  script:
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        export NEW_TAG=$CI_COMMIT_TAG
+      else
+        export NEW_TAG=${TAG_NAME:-v0.1.0}
+      fi
+    # YAMLのイメージタグを置換
+    - find p3/k8s/app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
+    # 変更をコミットしてPush
+    - git add p3/k8s/app/
+    - |
+      if git diff --quiet && git diff --staged --quiet; then
+        echo "No changes to commit"
+      else
+        git commit -m "Update image tags to ${NEW_TAG} [skip ci]"
+        # プロジェクトへの書き込み権限を持つトークンが必要な場合があります
+        git push http://root:${GITLAB_TOKEN}@gitlab.k8s.icchon.jp/root/your-project.git HEAD:main
+      fi
+  only:
+    - tags
+    - web
