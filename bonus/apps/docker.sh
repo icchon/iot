@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=registry.k8s.icchon.jp/root/iot
+PREFIX=registry2.k8s.icchon.jp/root/iot
 APP1=$PREFIX/vote-app1:latest
 APP2=$PREFIX/vote-app2:latest
 APP3=$PREFIX/vote-app3:latest
