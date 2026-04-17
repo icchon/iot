@@ -16,7 +16,7 @@ spec:
         app: app3-deployment
     spec:
       containers:
-      - image: icchondocker/vote-app3:v0.3.0
+      - image: registry2.k8s.icchon.jp/root/iot/vote-app3:latest
         name: vote-app3
         ports:
         - containerPort: 3000

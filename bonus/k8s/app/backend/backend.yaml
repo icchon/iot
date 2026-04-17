@@ -16,7 +16,7 @@ spec:
         app: backend-deployment
     spec:
       containers:
-      - image: icchondocker/vote-backend:v0.3.0
+      - image: registry2.k8s.icchon.jp/root/iot/vote-backend:latest
         name: vote-backend
         ports:
         - containerPort: 8080
