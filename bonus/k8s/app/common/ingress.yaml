@@ -2,13 +2,18 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: global-default-ingress
-  annotations:
-    # 名前空間を dev に修正
-    traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd
   namespace: dev
+  annotations:
+    cert-manager.io/cluster-issuer: cloudflare-issuer
 spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - app.k8s.icchon.jp
+    secretName: app-tls-secret
   rules:
-  - http:
+  - host: app.k8s.icchon.jp
+    http:
       paths:
       - path: /api
         pathType: Prefix
