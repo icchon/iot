@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+          pods insecure
+          fallthrough in-addr.arpa ip6.arpa
+        }
+        # ここで NodeHosts ファイルを読み込んでいます
+        hosts /etc/coredns/NodeHosts {
+          ttl 60
+          reload 15s
+          fallthrough
+        }
+        prometheus :9153
+        cache 30
+        loop
+        reload
+        loadbalance
+        import /etc/coredns/custom/*.override
+        forward . 8.8.8.8 # /etc/resolv.conf から 8.8.8.8 に変更
+    }
+    import /etc/coredns/custom/*.server
+  NodeHosts: |
+    192.168.56.110 kaisobes kaisobeS gitlab2.k8s.icchon.jp registry2.k8s.icchon.jp minio2.k8s.icchon.jp
+    192.168.56.111 kaisobesw kaisobeSW
