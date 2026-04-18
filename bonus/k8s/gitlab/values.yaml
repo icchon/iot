@@ -19,6 +19,7 @@ global:
 
 certmanager-issuer:
   install: false
+  enabled: false
   email: icchon1001@gmail.com
 
 registry:

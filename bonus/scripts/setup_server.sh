@@ -40,7 +40,19 @@ mkdir -p /home/vagrant/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
 sudo chown vagrant:vagrant /home/vagrant/.kube/config
 
-# GitLab 公式リポジトリを追加
-# helm repo add gitlab https://charts.gitlab.io/
-# # リポジトリの情報を最新にする
-# helm repo update
+helm repo add gitlab https://charts.gitlab.io/
+helm repo update
+
+echo "--- Installing Argo CD ---"
+kubectl create namespace argocd
+kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# 4. Argo CD Pod が準備できるまで待機
+echo "--- Waiting for Argo CD to be ready ---"
+kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=300s
+
+echo "--- Fixing Proxy Settings for Argo CD ---"
+kubectl set env deploy/argocd-repo-server -n argocd HTTP_PROXY- HTTPS_PROXY- NO_PROXY-
+kubectl set env deploy/argocd-server -n argocd HTTP_PROXY- HTTPS_PROXY- NO_PROXY-
+
+kubectl rollout restart deployment/argocd-repo-server -n argocd
