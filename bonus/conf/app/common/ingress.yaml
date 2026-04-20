@@ -5,6 +5,7 @@ metadata:
   namespace: dev
   annotations:
     cert-manager.io/cluster-issuer: cloudflare-issuer
+    nginx.ingress.kubernetes.io/app-root: /app3
 spec:
   ingressClassName: nginx
   tls:
