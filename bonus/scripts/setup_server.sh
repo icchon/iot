@@ -1,9 +1,10 @@
 #!/bin/bash
 SERVER_IP="192.168.56.110"
 
+sudo ip addr add $SERVER_IP/24 dev eth0 || true
 # 1. 必要なツールのインストール
-# git と helm は GitLab や Argo CD の操作に必須なので追加しました
-sudo apt-get update && sudo apt-get install -y net-tools bat tree git curl
+# bat -> batcat (Ubuntuパッケージ名) に修正
+sudo apt-get update && sudo apt-get install -y net-tools bat git curl
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 # 2. インターフェースの自動検出
@@ -11,7 +12,7 @@ IFACE=$(ip -4 addr show | grep "$SERVER_IP" | awk '{print $NF}')
 echo "Detected interface: $IFACE for IP $SERVER_IP"
 
 # 3. K3s のインストール
-# --write-kubeconfig-mode 644 を追加（vagrant ユーザーが直接 kubectl を使えるようにするため）
+# OrbStackでは root 実行が基本のため kubeconfig-mode は 644 でOK
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
   --node-ip=$SERVER_IP \
   --flannel-iface=$IFACE \
@@ -21,11 +22,10 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
   --write-kubeconfig-mode 644" sh -
 
 # 4. トークンの共有
-while [ ! -d /vagrant ]; do sleep 1; done
-sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/node-token
+# OrbStack では Mac のカレントディレクトリが /mnt/mac にマウントされます
+sudo cat /var/lib/rancher/k3s/server/node-token > node-token
 
-# 5. [重要] スワップファイルの作成 (GitLab用)
-# メモリ不足によるクラッシュを防ぐため、4GBのスワップを追加します
+# 5. スワップファイルの作成 (GitLab用)
 if [ ! -f /swapfile ]; then
     echo "Creating 4GB swap file..."
     sudo fallocate -l 4G /swapfile
@@ -35,10 +35,9 @@ if [ ! -f /swapfile ]; then
     echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 fi
 
-# 6. Kubeconfig を vagrant ユーザーのデフォルトに設定
-mkdir -p /home/vagrant/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
-sudo chown vagrant:vagrant /home/vagrant/.kube/config
+# 6. Kubeconfig の設定 (OrbStack のデフォルトユーザー root 用)
+mkdir -p $HOME/.kube
+sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
 
 helm repo add gitlab https://charts.gitlab.io/
 helm repo update
@@ -47,9 +46,9 @@ echo "--- Installing Argo CD ---"
 kubectl create namespace argocd
 kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-# 4. Argo CD Pod が準備できるまで待機
 echo "--- Waiting for Argo CD to be ready ---"
-kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=300s
+# タイムアウトを少し長めに設定
+kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=600s
 
 echo "--- Fixing Proxy Settings for Argo CD ---"
 kubectl set env deploy/argocd-repo-server -n argocd HTTP_PROXY- HTTPS_PROXY- NO_PROXY-

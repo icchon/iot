@@ -9,7 +9,7 @@ global:
     minio:
       name: minio2.k8s.icchon.jp
   ingress:
-    configureCertmanager: true
+    configureCertmanager: false
     annotations:
       cert-manager.io/cluster-issuer: "cloudflare-issuer"
     enabled: true
