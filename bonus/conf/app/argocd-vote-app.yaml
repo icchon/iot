@@ -1,0 +1,17 @@
+project: default
+source:
+  repoURL: https://gitlab2.k8s.icchon.jp/root/iot.git
+  path: bonus/conf/app
+  targetRevision: HEAD
+  directory:
+    recurse: true
+    jsonnet: {}
+destination:
+  server: https://kubernetes.default.svc
+  namespace: dev
+syncPolicy:
+  automated:
+    prune: true
+    enabled: true
+  syncOptions:
+    - ServerSideApply=true
