@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/icchon/iot.git
-    path: p3/k8s/db
+    path: p3/conf/db
     targetRevision: HEAD
     directory:
       recurse: true

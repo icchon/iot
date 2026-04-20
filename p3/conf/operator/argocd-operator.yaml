@@ -1,22 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vote-app
+  name: vote-app-operator
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/icchon/iot.git
-    path: p3/k8s/app
+    path: p3/conf/operator
     targetRevision: HEAD
     directory:
       recurse: true
   destination:
     server: https://kubernetes.default.svc
-    namespace: dev
+    namespace: argocd # Operator は argocd 等の管理用空間か default に入れるのが一般的
   syncPolicy:
     automated:
       prune: true
+      enabled: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
