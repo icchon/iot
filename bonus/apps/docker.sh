@@ -1,10 +1,11 @@
 #!/bin/bash
 
 PREFIX=registry2.k8s.icchon.jp/root/iot
-APP1=$PREFIX/vote-app1:latest
-APP2=$PREFIX/vote-app2:latest
-APP3=$PREFIX/vote-app3:latest
-BACKEND=$PREFIX/vote-backend:latest
+VERSION=v0.1.0
+APP1=$PREFIX/vote-app1:$VERSION
+APP2=$PREFIX/vote-app2:$VERSION
+APP3=$PREFIX/vote-app3:$VERSION
+BACKEND=$PREFIX/vote-backend:$VERSION
 
 docker build -t $APP1 ./app1 && docker push $APP1
 docker build -t $APP2 ./app2 && docker push $APP2
