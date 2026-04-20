@@ -8,7 +8,7 @@ orb create ubuntu kaisobeSW
 # 2. リソース設定（Vagrantfile の再現） [cite: 3, 5]
 echo "Setting resources..."
 orb set cpus 4 kaisobeS
-orb set memory 16GiB kaisobeS
+orb set memory 18GiB kaisobeS
 orb set cpus 2 kaisobeSW
 orb set memory 4GiB kaisobeSW
 
@@ -27,5 +27,13 @@ echo "Running setup scripts..."
 orb -m kaisobeS bash < scripts/setup_server.sh
 orb -m kaisobeSW bash < scripts/setup_worker.sh
 
+# 今後再起動した時にこれを実行するだけでOKにする用
+echo "Restoring network routes for OrbStack..."
+sudo ifconfig lo0 alias 192.168.56.1
+MASTER_IP=$(orb -m kaisobeS ip addr show eth0 | grep "inet " | awk '{print $2}' | cut -d/ -f1)
+sudo route -n add 192.168.56.110 $MASTER_IP
+
 echo "Cluster is ready!"
 orb list
+
+
