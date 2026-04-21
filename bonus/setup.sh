@@ -42,7 +42,13 @@ helm upgrade --install gitlab gitlab/gitlab \
   -f conf/gitlab/values.yaml \
   --timeout 600s
 
-# 8. ArgoCD Application の適用 (Root App)
+# 8. CoreDNS の設定適用 (GitLab のサービスを解決するため)
+echo "Applying CoreDNS custom configuration..."
+kubectl apply -f conf/coredns-hosts.yaml
+echo "Restarting CoreDNS to apply changes..."
+kubectl rollout restart deployment coredns -n kube-system
+
+# 9. ArgoCD Application の適用 (Root App)
 echo "Applying ArgoCD Root Application..."
 kubectl apply -f conf/app/argocd-vote-app.yaml
 kubectl apply -f conf/db/argocd-vote-app-db.yaml

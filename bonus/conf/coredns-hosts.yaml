@@ -13,14 +13,11 @@ data:
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
         }
-        # hostsプラグインの設定を修正
-        hosts {
-          # 解決させたいドメインをここに明示的に書く
-          192.168.56.110 kaisobes kaisobeS gitlab.k8s.icchon.jp registry.k8s.icchon.jp minio.k8s.icchon.jp
-          192.168.56.111 kaisobesw kaisobeSW
-          # この一票が重要：定義されていないドメインを次に渡す
-          fallthrough
-        }
+        # IPではなくサービス名に書き換える
+        rewrite name gitlab.k8s.icchon.jp gitlab-nginx-ingress-controller.gitlab.svc.cluster.local
+        rewrite name registry.k8s.icchon.jp gitlab-nginx-ingress-controller.gitlab.svc.cluster.local
+        rewrite name minio.k8s.icchon.jp gitlab-nginx-ingress-controller.gitlab.svc.cluster.local
+        
         prometheus :9153
         forward . 8.8.8.8
         cache 30
@@ -28,4 +25,3 @@ data:
         reload
         loadbalance
     }
-    
