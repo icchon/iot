@@ -51,9 +51,9 @@ update-k8s:
         export NEW_TAG=${TAG_NAME:-v0.1.0}
       fi
     # YAMLのイメージタグを置換
-    - find p3/k8s/app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
+    - find p3/conf/app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
     # 変更をコミットしてPush
-    - git add p3/k8s/app/
+    - git add p3/conf/app/
     - |
       if git diff --quiet && git diff --staged --quiet; then
         echo "No changes to commit"

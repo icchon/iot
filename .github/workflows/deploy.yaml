@@ -57,8 +57,8 @@ jobs:
         run: |
           # タグの決定
           export NEW_TAG=${{ github.event.inputs.tag_name || github.ref_name }}
-          # p3/k8s/app 以下のすべての .yaml ファイル内のイメージタグ (:v0.1.0 等) を置換
-          find p3/k8s/app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
+          # p3/conf/app 以下のすべての .yaml ファイル内のイメージタグ (:v0.1.0 等) を置換
+          find p3/conf/app/ -name "*.yaml" -exec sed -i "s|:v[0-9.]*|:${NEW_TAG}|g" {} +
 
       # 4. 変更を main ブランチに push する
       - name: Commit and Push changes
@@ -66,6 +66,6 @@ jobs:
           export NEW_TAG=${{ github.event.inputs.tag_name || github.ref_name }}
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add p3/k8s/
+          git add p3/conf/
           git commit -m "chore: update image tag to ${NEW_TAG} [skip ci]" || echo "No changes to commit"
           git push origin main
