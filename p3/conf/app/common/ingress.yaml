@@ -3,12 +3,17 @@ kind: Ingress
 metadata:
   name: global-default-ingress
   annotations:
-    # 名前空間を dev に修正
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd
   namespace: dev
 spec:
+  tls:
+  - hosts:
+    - localhost
+    secretName: global-tls-secret
   rules:
-  - http:
+  - host: localhost
+    http:
       paths:
       - path: /api
         pathType: Prefix

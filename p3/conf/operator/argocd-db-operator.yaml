@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-db-operator
+  namespace: argocd  # Argo CD本体が動いているネームスペースを指定
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/icchon/iot.git
+    path: p3/conf/operator
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      jsonnet: {}
+  destination:
+    server: https://kubernetes.default.svc
+    # namespace: <デプロイ先のネームスペース> ※必要に応じて追加
+  syncPolicy:
+    automated:
+      prune: true
+      enabled: true
+    syncOptions:
+      - ServerSideApply=true

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: iot-db-app
+  namespace: argocd  # Argo CD 本体が動作しているネームスペース
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/icchon/iot.git
+    path: p3/conf/db
+    targetRevision: HEAD
+    directory:
+      recurse: true
+      jsonnet: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev  # デプロイ先のネームスペース
+  syncPolicy:
+    automated:
+      prune: true
+      enabled: true
+    syncOptions:
+      - ServerSideApply=true
