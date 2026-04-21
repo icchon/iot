@@ -21,3 +21,4 @@ spec:
       enabled: true
     syncOptions:
       - ServerSideApply=true
+      - CreateNamespace=true
