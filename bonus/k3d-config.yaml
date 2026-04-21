@@ -21,3 +21,9 @@ options:
   kubeconfig:
     updateDefaultKubeconfig: true
     switchCurrentContext: true
+registries:
+  config: |
+    configs:
+      "registry.k8s.icchon.jp":
+        tls:
+          insecure_skip_verify: true
