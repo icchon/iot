@@ -28,7 +28,7 @@ echo "--- Waiting for Argo CD to be ready ---"
 kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=300s
 
 echo "--- Cluster is Ready! ---"
-echo "Access Argo CD at: https://argocd.localhost:8080/"
+echo "Access Argo CD at: https://localhost:8080/"
 echo "Access Apps at: https://localhost:8888/"
 echo "Initial Admin Password:"
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo

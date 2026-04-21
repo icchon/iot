@@ -4,7 +4,7 @@ metadata:
   name: global-default-ingress
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd,dev-strip-app-prefix@kubernetescrd
   namespace: dev
 spec:
   tls:

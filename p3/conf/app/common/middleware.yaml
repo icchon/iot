@@ -7,3 +7,15 @@ spec:
   replacePathRegex:
     regex: "^/$"
     replacement: "/app3"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-app-prefix
+  namespace: dev
+spec:
+  stripPrefix:
+    prefixes:
+      - /app1
+      - /app2
+      - /app3
