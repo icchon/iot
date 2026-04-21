@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # PREFIX=registry.k8s.icchon.jp/root/iot
-# VERSION=v0.2.0
+# VERSION=v0.1.0
 # APP1=$PREFIX/vote-app1:$VERSION
 # APP2=$PREFIX/vote-app2:$VERSION
 # APP3=$PREFIX/vote-app3:$VERSION
@@ -17,7 +17,7 @@
 
 # 本来のドメインを使用
 PREFIX=registry.k8s.icchon.jp/root/iot
-VERSION=v0.2.0
+VERSION=v0.1.0
 APPS=("vote-app1" "vote-app2" "vote-app3" "vote-backend")
 
 for APP in "${APPS[@]}"; do
