@@ -48,7 +48,24 @@ kubectl apply -f conf/coredns-hosts.yaml
 echo "Restarting CoreDNS to apply changes..."
 kubectl rollout restart deployment coredns -n kube-system
 
-# 9. ArgoCD Application の適用 (Root App)
+# 9. ArgoCD に GitLab の CA を信頼させる
+echo "Trusting GitLab CA in Argo CD..."
+# ルート証明書が作成されるのを待つ
+while ! kubectl get secret root-ca-secret -n cert-manager > /dev/null 2>&1; do
+  echo "Waiting for root-ca-secret in cert-manager namespace..."
+  sleep 5
+done
+
+# CA 証明書を取得し、Argo CD の ConfigMap に登録
+CA_CRT=$(kubectl get secret root-ca-secret -n cert-manager -o jsonpath='{.data.ca\.crt}' | base64 -d)
+kubectl create configmap argocd-tls-certs-cm -n argocd \
+  --from-literal=gitlab.k8s.icchon.jp="$CA_CRT" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
+# 設定を反映させるためにリポジトリサーバーを再起動
+kubectl rollout restart deployment argocd-repo-server -n argocd
+
+# 10. ArgoCD Application の適用 (Root App)
 echo "Applying ArgoCD Root Application..."
 kubectl apply -f conf/app/argocd-vote-app.yaml
 kubectl apply -f conf/db/argocd-vote-app-db.yaml
