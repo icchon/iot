@@ -2,21 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: global-default-ingress
-  namespace: dev
   annotations:
-    cert-manager.io/cluster-issuer: my-ca-issuer
-    # basePathを使用しているため、パスを書き換えずそのままバックエンドへ送る
-    # ルートへのアクセスを /app3 にリダイレクトする設定を追加
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/$ /app3 permanent;
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.middlewares: dev-replace-path@kubernetescrd
+  namespace: dev
 spec:
-  ingressClassName: nginx
   tls:
   - hosts:
-    - app.k8s.icchon.jp
-    secretName: app-tls-secret
+    - localhost
+    secretName: global-tls-secret
   rules:
-  - host: app.k8s.icchon.jp
+  - host: localhost
     http:
       paths:
       - path: /api
@@ -48,7 +44,7 @@ spec:
             port:
               number: 80
       - path: /
-        pathType: Prefix
+        pathType: Exact
         backend:
           service:
             name: app3-service
