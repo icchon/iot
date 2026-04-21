@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=registry2.k8s.icchon.jp/root/iot
+PREFIX=registry.k8s.icchon.jp/root/iot
 VERSION=v0.2.0
 APP1=$PREFIX/vote-app1:$VERSION
 APP2=$PREFIX/vote-app2:$VERSION

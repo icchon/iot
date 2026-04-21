@@ -6,7 +6,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "nginx"
     # --- 追加: cert-manager への指示 ---
-    cert-manager.io/cluster-issuer: "cloudflare-issuer"
+    cert-manager.io/cluster-issuer: "my-ca-issuer"
     # -------------------------------
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"

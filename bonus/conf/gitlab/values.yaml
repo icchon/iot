@@ -2,16 +2,16 @@ global:
   hosts:
     domain: k8s.icchon.jp
     gitlab:
-      name: gitlab2.k8s.icchon.jp
+      name: gitlab.k8s.icchon.jp
       https: true
     registry:
-      name: registry2.k8s.icchon.jp
+      name: registry.k8s.icchon.jp
     minio:
-      name: minio2.k8s.icchon.jp
+      name: minio.k8s.icchon.jp
   ingress:
     configureCertmanager: false
     annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-issuer"
+      cert-manager.io/cluster-issuer: "my-ca-issuer"
     enabled: true
     class: nginx
     tls:
@@ -26,7 +26,7 @@ registry:
   enabled: true
   ingress:
     annotations:
-      cert-manager.io/cluster-issuer: "cloudflare-issuer"
+      cert-manager.io/cluster-issuer: "my-ca-issuer"
     tls:
       enabled: true
       secretName: gitlab-registry-tls
@@ -84,5 +84,5 @@ gitlab-runner:
   hostAliases:
     - ip: "10.43.247.185"
       hostnames:
-        - "gitlab2.k8s.icchon.jp"
+        - "gitlab.k8s.icchon.jp"
 

@@ -16,7 +16,7 @@ spec:
         app: app1-deployment
     spec:
       containers:
-      - image: registry2.k8s.icchon.jp/root/iot/vote-app1:v0.2.0
+      - image: registry.k8s.icchon.jp/root/iot/vote-app1:v0.2.0
         name: vote-app1
         ports:
         - containerPort: 3000

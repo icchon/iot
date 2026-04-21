@@ -16,7 +16,7 @@ data:
         # hostsプラグインの設定を修正
         hosts {
           # 解決させたいドメインをここに明示的に書く
-          192.168.56.110 kaisobes kaisobeS gitlab2.k8s.icchon.jp registry2.k8s.icchon.jp minio2.k8s.icchon.jp
+          192.168.56.110 kaisobes kaisobeS gitlab.k8s.icchon.jp registry.k8s.icchon.jp minio.k8s.icchon.jp
           192.168.56.111 kaisobesw kaisobeSW
           # この一票が重要：定義されていないドメインを次に渡す
           fallthrough
