@@ -5,7 +5,10 @@ metadata:
   namespace: dev
   annotations:
     cert-manager.io/cluster-issuer: my-ca-issuer
-    nginx.ingress.kubernetes.io/app-root: /app3
+    # basePathを使用しているため、パスを書き換えずそのままバックエンドへ送る
+    # ルートへのアクセスを /app3 にリダイレクトする設定を追加
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/$ /app3 permanent;
 spec:
   ingressClassName: nginx
   tls:
@@ -45,7 +48,7 @@ spec:
             port:
               number: 80
       - path: /
-        pathType: Exact
+        pathType: Prefix
         backend:
           service:
             name: app3-service
