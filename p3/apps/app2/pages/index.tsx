@@ -64,7 +64,7 @@ export default function Home() {
             <span>山: {results.mountain || 0} 票</span>
           </div>
         </div>
-        <div className="version">v0.1.0</div>
+        <div className="version">v0.2.0</div>
       </main>
 
       <style jsx>{`
