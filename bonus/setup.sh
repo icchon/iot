@@ -11,19 +11,47 @@ k3d cluster create --config k3d-config.yaml
 
 # 3. cert-manager のインストール
 echo "Installing cert-manager..."
-kubectl apply -f conf/cert/cert-manager.yaml
 
-echo "Waiting for cert-manager to be ready..."
+# 既存の競合を避けるため、まず Namespace を確実に作成
+kubectl create namespace cert-manager --dry-run=client -o yaml | kubectl apply -f -
+
+# 【重要】CRDだけを先に、独立して適用する（公式のリモートURLを使うのが最も確実です）
+echo "Applying cert-manager CRDs directly..."
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.crds.yaml
+
+# 確実に API サーバーに登録されるまで待機
+sleep 10
+
+# 定義が作られたか確認（ここでダメなら YAML 取得に失敗しています）
+if ! kubectl get crd certificates.cert-manager.io > /dev/null 2>&1; then
+    echo "CRDs failed to install. Checking connectivity..."
+    exit 1
+fi
+
+# 本体（コントローラー等）をインストール
+echo "Installing cert-manager controllers..."
+kubectl apply --server-side --force-conflicts -f conf/cert/cert-manager.yaml
+
+echo "Waiting for cert-manager Webhook to be ready..."
 kubectl wait --for=condition=Available deployment/cert-manager-webhook -n cert-manager --timeout=300s
+
+echo "Giving Webhook a few seconds to stabilize..."
+sleep 20
 
 # 4. 自己署名 Issuer の適用
 echo "Applying self-signed issuer..."
-kubectl apply -f conf/cert/selfsigned-issuer.yaml
+# 失敗しても3回までリトライする
+for i in {1..3}; do
+    kubectl apply -f conf/cert/selfsigned-issuer.yaml && break
+    echo "Retry applying issuer in 10s... ($i/3)"
+    sleep 10
+done
+
 
 # 5. ArgoCD のインストール
 echo "Installing Argo CD..."
 kubectl create namespace argocd || true
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 echo "Waiting for Argo CD to be ready..."
 kubectl wait --for=condition=Available deployment/argocd-server -n argocd --timeout=600s
@@ -32,14 +60,43 @@ kubectl wait --for=condition=Available deployment/argocd-server -n argocd --time
 echo "Applying Argo CD Ingress..."
 kubectl apply -f conf/argocd/ingress.yaml
 
+
+# 既存のCRDにHelmの所有権ラベルを付与する
+CRDS=(
+  "certificates.cert-manager.io"
+  "certificaterequests.cert-manager.io"
+  "challenges.acme.cert-manager.io"
+  "clusterissuers.cert-manager.io"
+  "issuers.cert-manager.io"
+  "orders.acme.cert-manager.io"
+)
+
+for crd in "${CRDS[@]}"; do
+  kubectl label crd $crd app.kubernetes.io/managed-by=Helm --overwrite
+  kubectl annotate crd $crd meta.helm.sh/release-name=gitlab --overwrite
+  kubectl annotate crd $crd meta.helm.sh/release-namespace=gitlab --overwrite
+done
+
 # 7. GitLab のインストール
 echo "Installing GitLab..."
 kubectl create namespace gitlab || true
+
+echo "Patching existing CRDs for Helm ownership..."
+CRDS=("certificates.cert-manager.io" "certificaterequests.cert-manager.io" "challenges.acme.cert-manager.io" "clusterissuers.cert-manager.io" "issuers.cert-manager.io" "orders.acme.cert-manager.io")
+for crd in "${CRDS[@]}"; do
+  kubectl label crd $crd app.kubernetes.io/managed-by=Helm --overwrite > /dev/null 2>&1
+  kubectl annotate crd $crd meta.helm.sh/release-name=gitlab --overwrite > /dev/null 2>&1
+  kubectl annotate crd $crd meta.helm.sh/release-namespace=gitlab --overwrite > /dev/null 2>&1
+done
+
+kubectl delete crd certificates.cert-manager.io certificaterequests.cert-manager.io challenges.acme.cert-manager.io clusterissuers.cert-manager.io issuers.cert-manager.io orders.acme.cert-manager.io --ignore-not-found
+
 helm repo add gitlab https://charts.gitlab.io
 helm repo update
 helm upgrade --install gitlab gitlab/gitlab \
   -n gitlab \
   -f conf/gitlab/values.yaml \
+  --set global.certmanager.install=false \
   --timeout 600s
 
 # 8. CoreDNS の設定適用 (GitLab のサービスを解決するため)
@@ -50,19 +107,27 @@ kubectl rollout restart deployment coredns -n kube-system
 
 # 9. ArgoCD に GitLab の CA を信頼させる
 echo "Trusting GitLab CA in Argo CD..."
-# ルート証明書が作成されるのを待つ
-while ! kubectl get secret root-ca-secret -n cert-manager > /dev/null 2>&1; do
-  echo "Waiting for root-ca-secret in cert-manager namespace..."
-  sleep 5
+
+# GitLab が自動生成する CA Secret を待つ
+while ! kubectl get secret gitlab-wildcard-tls-ca -n gitlab > /dev/null 2>&1; do
+  echo "Waiting for gitlab-wildcard-tls-ca in gitlab namespace..."
+  sleep 10
 done
 
-# CA 証明書を取得し、Argo CD の ConfigMap に登録
-CA_CRT=$(kubectl get secret root-ca-secret -n cert-manager -o jsonpath='{.data.ca\.crt}' | base64 -d)
+# GitLab の CA を取得 (キー名が 'cfssl_ca' になることが多いです)
+CA_CRT=$(kubectl get secret gitlab-wildcard-tls-ca -n gitlab -o jsonpath='{.data.cfssl_ca}' | base64 -d)
+
+# もし上記で空なら、標準的な 'ca.crt' も試す
+if [ -z "$CA_CRT" ]; then
+    CA_CRT=$(kubectl get secret gitlab-wildcard-tls-ca -n gitlab -o jsonpath='{.data.ca\.crt}' | base64 -d)
+fi
+
+# Argo CD の ConfigMap に登録
 kubectl create configmap argocd-tls-certs-cm -n argocd \
   --from-literal=gitlab.k8s.icchon.jp="$CA_CRT" \
   --dry-run=client -o yaml | kubectl apply -f -
 
-# 設定を反映させるためにリポジトリサーバーを再起動
+# リポジトリサーバーを再起動して反映
 kubectl rollout restart deployment argocd-repo-server -n argocd
 
 # 10. ArgoCD Application の適用 (Root App)
