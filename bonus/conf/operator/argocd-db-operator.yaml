@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://gitlab.k8s.icchon.jp/root/iot.git
-    path: p3/conf/operator
+    path: bonus/conf/operator
     targetRevision: HEAD
     directory:
       recurse: true
