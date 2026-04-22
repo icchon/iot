@@ -31,7 +31,6 @@ registry:
       enabled: true
       secretName: gitlab-registry-tls
 
-# 2. リソースを大量に喰う「監視系」を徹底的にOFFにする
 prometheus:
   install: false
 gitlab-exporter:

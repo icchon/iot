@@ -108,19 +108,14 @@ kubectl rollout restart deployment coredns -n kube-system
 # 9. ArgoCD に GitLab の CA を信頼させる
 echo "Trusting GitLab CA in Argo CD..."
 
-# GitLab が自動生成する CA Secret を待つ
-while ! kubectl get secret gitlab-wildcard-tls-ca -n gitlab > /dev/null 2>&1; do
-  echo "Waiting for gitlab-wildcard-tls-ca in gitlab namespace..."
+# cert-manager が管理する root-ca-secret を待つ
+while ! kubectl get secret root-ca-secret -n cert-manager > /dev/null 2>&1; do
+  echo "Waiting for root-ca-secret in cert-manager namespace..."
   sleep 10
 done
 
-# GitLab の CA を取得 (キー名が 'cfssl_ca' になることが多いです)
-CA_CRT=$(kubectl get secret gitlab-wildcard-tls-ca -n gitlab -o jsonpath='{.data.cfssl_ca}' | base64 -d)
-
-# もし上記で空なら、標準的な 'ca.crt' も試す
-if [ -z "$CA_CRT" ]; then
-    CA_CRT=$(kubectl get secret gitlab-wildcard-tls-ca -n gitlab -o jsonpath='{.data.ca\.crt}' | base64 -d)
-fi
+# CA 証明書を取得
+CA_CRT=$(kubectl get secret root-ca-secret -n cert-manager -o jsonpath='{.data.ca\.crt}' | base64 -d)
 
 # Argo CD の ConfigMap に登録
 kubectl create configmap argocd-tls-certs-cm -n argocd \
