@@ -64,7 +64,7 @@ export default function Home() {
             <span>ごはん: {results.rice || 0} 票</span>
           </div>
         </div>
-        <div className="version">v0.1.0</div>
+        <div className="version">v0.4.0</div>
       </main>
 
       <style jsx>{`
